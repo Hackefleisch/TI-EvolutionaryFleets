@@ -15,6 +15,8 @@ Fleet::Fleet(std::mt19937 * in_rng, std::uniform_int_distribution<int>* in_d1000
 
 void Fleet::Initialize(float in_costLimit, int in_capitalShipLimit){
 
+	Reset();
+
 	costLimit = in_costLimit;
 	capitalShipLimit = in_capitalShipLimit;
 
@@ -55,6 +57,29 @@ void Fleet::Initialize(float in_costLimit, int in_capitalShipLimit){
 std::string Fleet::GetName() const{
 
 	return name;
+}
+
+void Fleet::Reset(){
+
+	costLimit = 0.0f;
+	combinedCost = 0.0f;
+	capitalShipLimit = 0;
+	capitalShipCount = 0;
+	combinedCapacity = 0;
+	usedCapacity = 0;
+	name = "";
+	ships.clear();
+	buyableList.clear();
+	for(int t = (int)ShipTypes::Fighter; t <= (int)ShipTypes::WarSun; t++){
+		typeCount.at(t) = 0;
+	}
+	winScore = 0.0f;
+	dstTotalScore = 0.0f;
+	tknTotalScore = 0.0f;
+	dstRelScore = 0.0f;
+	tknRelScore = 0.0f;
+	frctScore = 0.0f;
+
 }
 
 int Fleet::UpdateBuyableList(){

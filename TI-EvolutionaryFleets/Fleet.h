@@ -14,6 +14,7 @@ public:
 	~Fleet() = default;
 	void Initialize(float in_costLimit, int in_capitalShipLimit);
 	std::string GetName() const;
+	void Reset();
 private:
 	int UpdateBuyableList();
 private:

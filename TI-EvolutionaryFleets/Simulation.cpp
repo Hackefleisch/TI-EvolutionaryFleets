@@ -7,6 +7,9 @@ void Simulation::Initialize(){
 
 	fleet.Initialize(9, 3);
 	std::cout << fleet.GetName() << std::endl;
+	fleet.Initialize(9, 3);
+	std::cout << fleet.GetName() << std::endl;
+
 }
 
 Simulation::Simulation()
