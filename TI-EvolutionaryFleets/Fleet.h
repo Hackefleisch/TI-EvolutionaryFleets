@@ -19,6 +19,8 @@ public:
 	void Reset();
 	void Refresh();
 	BattleReport Fight(Fleet& opposingFleet, bool verbose);
+	void SetFitness(float score);
+	float GetFitness() const;
 private:
 	int UpdateBuyableList();
 	int AssignHitsToType(int nHits, ShipTypes type, bool verbose);

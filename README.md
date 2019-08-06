@@ -59,10 +59,10 @@ All of these scores should be normalized to a value between 0 and 1 and then com
 frct := amount of ressources destroyed divided by combined cost of itself,
         currently not normalized since I am lacking a good idea
 
-fitness = (a*#win + b*#dst + c*#tkn + d*%dst + e*%tkn + f*frct) / (a+b+c+d+e+f)
+fitness = (a*#win + b*#dst + c*(1-#tkn) + d*%dst + e*(1-%tkn) + f*frct) / (a+b+c+d+e+f)
 
 a,b,c,d,e,f are linear factors to weight different score. A factor equal to zero takes a score out. 
-The damage taken scores should be weighted negative since loss of ressource isn't really good.
+The damage taken scores are inverted because lower losses are better.
 ```
 
 The fitness function is as written here really crude and I doubt it to be very efficient, but I will test it this way first and then see how it is going.

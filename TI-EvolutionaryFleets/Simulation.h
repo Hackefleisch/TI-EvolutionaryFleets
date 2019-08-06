@@ -4,10 +4,13 @@
 #include <random>
 #include <vector>
 #include <iostream>
+#include "BattleReport.h"
 
 class Simulation{
 public:
-	void Initialize();
+	void Initialize(bool verbose);
+	float ScoreFleets(bool verbose);
+	void PrintScores() const;
 	Simulation();
 	~Simulation();
 private:

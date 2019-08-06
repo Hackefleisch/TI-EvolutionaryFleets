@@ -152,6 +152,16 @@ BattleReport Fleet::Fight(Fleet & opposingFleet, bool verbose){
 	return br;
 }
 
+void Fleet::SetFitness(float score){
+
+	fitness = score;
+
+}
+
+float Fleet::GetFitness() const{
+	return fitness;
+}
+
 int Fleet::UpdateBuyableList(){
 
 	int nBuyableItems = 0;

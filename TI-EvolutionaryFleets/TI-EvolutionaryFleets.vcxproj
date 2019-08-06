@@ -126,12 +126,14 @@
     <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BattleReport.h" />
     <ClInclude Include="Fleet.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="ShipTypes.h" />
     <ClInclude Include="Simulation.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BattleReport.cpp" />
     <ClCompile Include="Fleet.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Ship.cpp" />
