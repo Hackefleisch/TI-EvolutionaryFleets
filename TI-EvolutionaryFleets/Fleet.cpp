@@ -58,38 +58,9 @@ void Fleet::Initialize(float in_costLimit, int in_capitalShipLimit){
 	costLimit = in_costLimit;
 	capitalShipLimit = in_capitalShipLimit;
 
-	int nListItems = UpdateBuyableList();
+	BuyShips();
 
-	while(nListItems > 0){
-		int d1000Result = (*d1000)(*rng) - 1;
-		int index = d1000Result * nListItems / 1000;
-
-		ShipTypes type = buyableList.at(index);
-
-		Ship tmp(rng, d10);
-		tmp.MakeOfType(type);
-		ships.push_back(tmp);
-
-		combinedCost += ShipStats::Costs(type);
-		combinedCapacity += ShipStats::Capacity(type);
-		typeCount.at((int)type)++;
-
-		if(type == ShipTypes::Fighter){
-			usedCapacity++;
-		} else{
-			capitalShipCount++;
-		}
-
-
-		nListItems = UpdateBuyableList();
-	}
-
-	name = "Fi" + std::to_string(typeCount.at((int)ShipTypes::Fighter));
-	name += "De" + std::to_string(typeCount.at((int)ShipTypes::Destroyer));
-	name += "Cr" + std::to_string(typeCount.at((int)ShipTypes::Cruiser));
-	name += "Ca" + std::to_string(typeCount.at((int)ShipTypes::Carrier));
-	name += "Dr" + std::to_string(typeCount.at((int)ShipTypes::Dreadnought));
-	name += "Ws" + std::to_string(typeCount.at((int)ShipTypes::WarSun));
+	UpdateName();
 }
 
 std::string Fleet::GetName() const{
@@ -98,7 +69,9 @@ std::string Fleet::GetName() const{
 }
 
 void Fleet::Reset(){
-	// probably also lacks things
+
+	dead = false;
+	canReproduce = true;
 	costLimit = 0.0f;
 	combinedCost = 0.0f;
 	capitalShipLimit = 0;
@@ -195,25 +168,115 @@ bool Fleet::CanReproduce() const{
 }
 
 void Fleet::MarkDead(){
+	assert(!dead);
 	dead = true;
 	canReproduce = false;
 }
 
-void Fleet::Reproduce(const Fleet & fleet, float mutationChance, float mutationIntensity, int maxFleetSize, float maxRessources){
+void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationIntensity, int maxFleetSize, float maxRessources){
 
-	dead = false;
-	// mutation is missing
-
-	costLimit = fleet.costLimit;
-	combinedCost = fleet.combinedCost;
-	usedCapacity = fleet.usedCapacity;
-	combinedCapacity = fleet.combinedCapacity;
+	Reset();
+	canReproduce = false;
 	capitalShipLimit = fleet.capitalShipLimit;
-	capitalShipCount = fleet.capitalShipCount;
-	name.assign(fleet.name);
-	ships = fleet.ships;
-	buyableList = fleet.buyableList;
-	typeCount = fleet.typeCount;
+	costLimit = fleet.costLimit;
+
+	int maxMutationRoll = (int)(1000 * mutationChance);
+	int d1000result = (*d1000)(*rng);
+	if(d1000result <= maxMutationRoll){
+		int d10result = (*d10)(*rng);
+		std::vector<ShipTypes> prebuyList;
+		for(const Ship& ship : fleet.ships){
+			prebuyList.push_back(ship.GetType());
+		}
+		if(d10result > 5){
+			// mutate ship
+			int nListItems = UpdateBuyableList();
+			ShipTypes type = GetTypeToBuy(nListItems);
+			prebuyList.push_back(type);
+		}
+		d10result = (*d10)(*rng);
+		if(d10result > 5){
+			// mutate cost
+			d1000result = 0;
+			// reroll die for strongest result
+			for(int i = 0; i < mutationIntensity; i++){
+				int tmp = (*d1000)(*rng);
+				if(tmp > d1000result){
+					d1000result = tmp;
+				}
+			}
+			// calculate intensity
+			float change = 0.0f;
+			if(d1000result < 533){
+				change = 1.0f;
+			} else if(d1000result < 800){
+				change = 2.0f;
+			} else if(d1000result < 933){
+				change = 3.0f;
+			} else{
+				change = 4.0f;
+			}
+			// calculate direction
+			d10result = (*d10)(*rng);
+			if(d10result > 5){
+				change *= -1;
+			}
+			// apply change
+			costLimit += change;
+			if(costLimit > maxRessources){
+				costLimit = maxRessources;
+			} else if(costLimit < 1.0f){
+				costLimit = 1.0f;
+			}
+		}
+		d10result = (*d10)(*rng);
+		if(d10result > 5){
+			// mutate size
+			d1000result = 0;
+			// reroll die for strongest result
+			for(int i = 0; i < mutationIntensity; i++){
+				int tmp = (*d1000)(*rng);
+				if(tmp > d1000result){
+					d1000result = tmp;
+				}
+			}
+			// calculate intensity
+			int change = 0;
+			if(d1000result < 666){
+				change = 1;
+			} else{
+				change = 2;
+			}
+			// calculate direction
+			d10result = (*d10)(*rng);
+			if(d10result > 5){
+				change *= -1;
+			}
+			capitalShipLimit += change;
+			if(capitalShipLimit > maxFleetSize){
+				capitalShipLimit = maxFleetSize;
+			} else if(capitalShipLimit < 1){
+				capitalShipLimit = 1;
+			}
+		}
+		PreBuyShips(prebuyList);
+		BuyShips();
+		UpdateName();
+	} else{
+		combinedCost = fleet.combinedCost;
+		capitalShipCount = fleet.capitalShipCount;
+		combinedCapacity = fleet.combinedCapacity;
+		usedCapacity = fleet.usedCapacity;
+		name.assign(fleet.name);
+		ships = fleet.ships;
+		buyableList = fleet.buyableList;
+		typeCount = fleet.typeCount;
+		fitness = fleet.fitness;
+		rng = fleet.rng;
+		d10 = fleet.d10;
+		d1000 = fleet.d1000;
+	}
+
 
 }
 
@@ -223,18 +286,9 @@ int Fleet::UpdateBuyableList(){
 
 	buyableList.clear();
 
-	int capacityLeft = combinedCapacity - usedCapacity;
-	float ressourcesLeft = costLimit - combinedCost;
-	int capitalShipsLeft = capitalShipLimit - capitalShipCount;
-
-	if(capacityLeft > 0 && ressourcesLeft >= ShipStats::Costs(ShipTypes::Fighter)){
-		buyableList.push_back(ShipTypes::Fighter);
-		nBuyableItems++;
-	}
-
-	for(int t = (int)ShipTypes::Destroyer; t != (int)ShipTypes::WarSun; t++){
+	for(int t = (int)ShipTypes::Fighter; t <= (int)ShipTypes::WarSun; t++){
 		ShipTypes st = static_cast<ShipTypes>(t);
-		if(capitalShipsLeft > 0 && ressourcesLeft >= ShipStats::Costs(st)){
+		if(CanBuyType(st)){
 			buyableList.push_back(st);
 			nBuyableItems++;
 		}
@@ -327,4 +381,99 @@ float Fleet::CountActiveRessource() const{
 	}
 
 	return activeRessources;
+}
+
+void Fleet::BuyShips(){
+
+	int nListItems = UpdateBuyableList();
+
+	while(nListItems > 0){
+		ShipTypes type = GetTypeToBuy(nListItems);
+
+		BuyShipType(type);
+
+		nListItems = UpdateBuyableList();
+	}
+
+}
+
+ShipTypes Fleet::GetTypeToBuy(int nListItems) const{
+
+	int d1000Result = (*d1000)(*rng) - 1;
+	int index = d1000Result * nListItems / 1000;
+
+	return buyableList.at(index);
+
+}
+
+void Fleet::BuyShipType(ShipTypes type){
+
+	Ship tmp(rng, d10);
+	tmp.MakeOfType(type);
+	ships.push_back(tmp);
+
+	combinedCost += ShipStats::Costs(type);
+	combinedCapacity += ShipStats::Capacity(type);
+	typeCount.at((int)type)++;
+
+	if(type == ShipTypes::Fighter){
+		usedCapacity++;
+	} else{
+		capitalShipCount++;
+	}
+
+}
+
+bool Fleet::CanBuyType(ShipTypes type) const{
+
+	int capacityLeft = combinedCapacity - usedCapacity;
+	float ressourcesLeft = costLimit - combinedCost;
+	int capitalShipsLeft = capitalShipLimit - capitalShipCount;
+
+	if(type == ShipTypes::Fighter){
+		return capacityLeft > 0 && ressourcesLeft >= ShipStats::Costs(ShipTypes::Fighter);
+	} else{
+		return capitalShipsLeft > 0 && ressourcesLeft >= ShipStats::Costs(type);
+	}
+
+}
+
+void Fleet::PreBuyShips(std::vector<ShipTypes> preBuyList){
+
+	std::vector<ShipTypes> tmpList;
+	bool buyableLeft = true;
+
+	while((!preBuyList.empty() || !tmpList.empty()) && buyableLeft){
+
+		ShipTypes type = preBuyList.back();
+		preBuyList.pop_back();
+		if(CanBuyType(type)){
+			BuyShipType(type);
+		} else{
+			tmpList.push_back(type);
+		}
+
+		if(preBuyList.empty()){
+			preBuyList = tmpList;
+			tmpList.clear();
+			buyableLeft = false;
+			for(ShipTypes t : preBuyList){
+				if(CanBuyType(t)){
+					buyableLeft = true;
+				}
+			}
+		}
+	}
+
+}
+
+void Fleet::UpdateName(){
+
+	name = "Fi" + std::to_string(typeCount.at((int)ShipTypes::Fighter));
+	name += "De" + std::to_string(typeCount.at((int)ShipTypes::Destroyer));
+	name += "Cr" + std::to_string(typeCount.at((int)ShipTypes::Cruiser));
+	name += "Ca" + std::to_string(typeCount.at((int)ShipTypes::Carrier));
+	name += "Dr" + std::to_string(typeCount.at((int)ShipTypes::Dreadnought));
+	name += "Ws" + std::to_string(typeCount.at((int)ShipTypes::WarSun));
+
 }

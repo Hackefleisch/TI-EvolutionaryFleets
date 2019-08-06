@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include "BattleReport.h"
+#include <assert.h>
 
 class Fleet{
 public:
@@ -25,7 +26,7 @@ public:
 	bool IsDead() const;
 	bool CanReproduce() const;
 	void MarkDead();
-	void Reproduce(const Fleet& fleet, float mutationChance, float mutationIntensity, int maxFleetSize, float maxRessources);
+	void Reproduce(const Fleet& fleet, float mutationChance, int mutationIntensity, int maxFleetSize, float maxRessources);
 private:
 	int UpdateBuyableList();
 	int AssignHitsToType(int nHits, ShipTypes type, bool verbose);
@@ -35,6 +36,12 @@ private:
 	bool CanFight() const;
 	void AssignHits(int nHits, bool verbose);
 	float CountActiveRessource() const;
+	void BuyShips();
+	ShipTypes GetTypeToBuy(int nListItems) const;
+	void BuyShipType(ShipTypes type);
+	bool CanBuyType(ShipTypes type) const;
+	void PreBuyShips(std::vector<ShipTypes> preBuyList);
+	void UpdateName();
 private:
 	bool dead = false;
 	bool canReproduce = true;
