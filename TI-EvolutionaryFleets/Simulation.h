@@ -10,9 +10,14 @@ class Simulation{
 public:
 	void Initialize(bool verbose);
 	float ScoreFleets(bool verbose);
+	void Start(bool verbose);
 	void PrintScores() const;
+	void EvolvePopulation();
 	Simulation();
 	~Simulation();
+	Fleet FindBestFleet() const;
+private:
+	float CalcSurvivalChance(int index) const;
 private:
 	std::vector<Fleet> fleets;
 	std::random_device rd;
@@ -27,17 +32,20 @@ private:
 	int populationSize = 1000;
 	int maxIterations = 10000;
 	float minFitnessImprovement = 0.0005f;
-	float winScoreFactor = 1.0f;
+	int nGenerationsToFailMinImprovement = 8;
+	float winScoreFactor = 0.0f;
 	float dstTotalScoreFactor = 1.0f;
-	float tknTotalScoreFactor = 1.0f;
-	float dstRelScoreFactor = 1.0f;
-	float tknRelScoreFactor = 1.0f;
-	float frctScoreFactor = 1.0f;
+	float tknTotalScoreFactor = 0.0f;
+	float dstRelScoreFactor = 0.0f;
+	float tknRelScoreFactor = 0.0f;
+	float frctScoreFactor = 0.0f;
 	float mutationRate = 0.1f;
 	float mutationIntensity = 1.0f;
 	int nScoringEncounters = 5;
 	int nEncounterRepitions = 5;
 	bool randomizedDeath = true;
 	float deathRate = 0.5f;
+	float minSurvivalChance = 0.01f;
+	float maxSurvivalChance = 0.99f;
 };
 

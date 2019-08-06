@@ -73,10 +73,105 @@ float Simulation::ScoreFleets(bool verbose){
 	return meanFitness;
 }
 
+void Simulation::Start(bool verbose){
+
+	float oldMeanFitness = 0.0f;
+	float newMeanFitness = 0.0f;
+	float meanFitnessDiff = 0.0f;
+	int iteration = 0;
+	int counterFailedImprovements = 0;
+
+	do{
+		iteration++;
+
+		// Score fleets
+		newMeanFitness = ScoreFleets(verbose);
+		meanFitnessDiff = newMeanFitness - oldMeanFitness;
+		oldMeanFitness = newMeanFitness;
+
+		if(meanFitnessDiff < minFitnessImprovement){
+			counterFailedImprovements++;
+		} else{
+			counterFailedImprovements = 0;
+		}
+
+		// collect data of current population
+		Fleet bestFleet = FindBestFleet();
+
+		// renew population
+		EvolvePopulation();
+
+		// compose report
+		std::cout << iteration << ". generation mean fitness " << newMeanFitness << ", improved by " << meanFitnessDiff << std::endl;
+		std::cout << "\tBest fleet is " + bestFleet.GetName() + " with fitness " << bestFleet.GetFitness() << std::endl;
+
+	} while(iteration < maxIterations && counterFailedImprovements <= nGenerationsToFailMinImprovement);
+
+}
+
 void Simulation::PrintScores() const{
 	for(const Fleet& fleet : fleets){
 		std::cout << fleet.GetName() + "   " + std::to_string(fleet.GetFitness()) << std::endl;
 	}
+}
+
+void Simulation::EvolvePopulation(){
+	// lowest fitness is first, highest last
+	std::sort(fleets.begin(), fleets.end());
+
+	int nDyingFleets = (int)(populationSize * deathRate);
+	int deadCounter = 0;
+
+	if(randomizedDeath){
+		while(deadCounter < nDyingFleets){
+
+			for(int i = 0; i < populationSize && deadCounter < nDyingFleets; i++){
+				Fleet& fleet = fleets.at(i);
+				if(!fleet.IsDead()){
+					int maxRollToSurvive = (int)(1000 * CalcSurvivalChance(i));
+					int d1000result = d1000(rng);
+					if(d1000result > maxRollToSurvive){
+						// fleet dies
+						fleet.MarkDead();
+						deadCounter++;
+					}
+				}
+			}
+
+		}
+	} else{
+		for(int i = 0; i < nDyingFleets; i++){
+			fleets.at(i).MarkDead();
+			deadCounter++;
+		}
+	}
+
+	int deadIndex = 0;
+	std::uniform_int_distribution<int> reproStartPicker(0, populationSize - 1);
+	int reproduceIndex = reproStartPicker(rng);
+	while(deadCounter > 0){
+		while(!fleets.at(deadIndex).IsDead()){
+			deadIndex++;
+			if(deadIndex >= populationSize){
+				deadIndex = 0;
+			}
+		}
+		while(!fleets.at(reproduceIndex).CanReproduce()){
+			reproduceIndex++;
+			if(reproduceIndex >= populationSize){
+				reproduceIndex = 0;
+			}
+		}
+		Fleet& deadFleet = fleets.at(deadIndex);
+		Fleet& reproduceFleet = fleets.at(reproduceIndex);
+		deadFleet.Reproduce(reproduceFleet, mutationRate, mutationIntensity, maxFleetSize, maxRessources);
+		deadCounter--;
+		reproduceIndex++;
+		if(reproduceIndex >= populationSize){
+			reproduceIndex = 0;
+		}
+	}
+	
 }
 
 Simulation::Simulation()
@@ -93,3 +188,22 @@ Simulation::Simulation()
 
 
 Simulation::~Simulation(){}
+
+Fleet Simulation::FindBestFleet() const{
+	Fleet bestFleet;
+	float bestScore = 0.0f;
+	for(int i = 0; i < populationSize; i++){
+		if(fleets.at(i).GetFitness() > bestScore){
+			bestScore = fleets.at(i).GetFitness();
+			bestFleet = fleets.at(i);
+		}
+	}
+	return bestFleet;
+}
+
+float Simulation::CalcSurvivalChance(int index) const{
+
+	float stepsize = (maxSurvivalChance - minSurvivalChance) / populationSize;
+
+	return minSurvivalChance + stepsize * index;
+}

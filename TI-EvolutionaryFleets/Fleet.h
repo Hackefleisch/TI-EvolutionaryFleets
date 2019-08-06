@@ -12,7 +12,7 @@ public:
 	Fleet() = default;
 	Fleet(std::mt19937* in_rng, std::uniform_int_distribution<int>* in_d1000, std::uniform_int_distribution<int>* in_d10);
 	Fleet(const Fleet& in_fleet);
-	Fleet& operator=(const Fleet&);
+	Fleet& operator=(const Fleet& in_fleet);
 	~Fleet() = default;
 	void Initialize(float in_costLimit, int in_capitalShipLimit);
 	std::string GetName() const;
@@ -21,6 +21,11 @@ public:
 	BattleReport Fight(Fleet& opposingFleet, bool verbose);
 	void SetFitness(float score);
 	float GetFitness() const;
+	bool operator<(const Fleet& fleet) const;
+	bool IsDead() const;
+	bool CanReproduce() const;
+	void MarkDead();
+	void Reproduce(const Fleet& fleet, float mutationChance, float mutationIntensity, int maxFleetSize, float maxRessources);
 private:
 	int UpdateBuyableList();
 	int AssignHitsToType(int nHits, ShipTypes type, bool verbose);
@@ -31,6 +36,8 @@ private:
 	void AssignHits(int nHits, bool verbose);
 	float CountActiveRessource() const;
 private:
+	bool dead = false;
+	bool canReproduce = true;
 	float costLimit = 0.0f;
 	float combinedCost = 0.0f;
 	int capitalShipLimit = 0;

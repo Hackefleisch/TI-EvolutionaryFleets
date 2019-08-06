@@ -14,7 +14,7 @@ Fleet::Fleet(std::mt19937 * in_rng, std::uniform_int_distribution<int>* in_d1000
 }
 
 Fleet::Fleet(const Fleet& in_fleet){
-
+	// poorly written and might be wrong
 	costLimit = in_fleet.costLimit;
 	combinedCost = in_fleet.combinedCost;
 	capitalShipLimit = in_fleet.capitalShipLimit;
@@ -30,6 +30,25 @@ Fleet::Fleet(const Fleet& in_fleet){
 	d10 = in_fleet.d10;
 	d1000 = in_fleet.d1000;
 
+}
+
+Fleet & Fleet::operator=(const Fleet & in_fleet){
+	// poorly written and might be wrong
+	costLimit = in_fleet.costLimit;
+	combinedCost = in_fleet.combinedCost;
+	capitalShipLimit = in_fleet.capitalShipLimit;
+	capitalShipCount = in_fleet.capitalShipCount;
+	combinedCapacity = in_fleet.combinedCapacity;
+	usedCapacity = in_fleet.usedCapacity;
+	name.assign(in_fleet.name);
+	ships = in_fleet.ships;
+	buyableList = in_fleet.buyableList;
+	typeCount = in_fleet.typeCount;
+	fitness = in_fleet.fitness;
+	rng = in_fleet.rng;
+	d10 = in_fleet.d10;
+	d1000 = in_fleet.d1000;
+	return *this;
 }
 
 void Fleet::Initialize(float in_costLimit, int in_capitalShipLimit){
@@ -79,7 +98,7 @@ std::string Fleet::GetName() const{
 }
 
 void Fleet::Reset(){
-
+	// probably also lacks things
 	costLimit = 0.0f;
 	combinedCost = 0.0f;
 	capitalShipLimit = 0;
@@ -97,7 +116,8 @@ void Fleet::Reset(){
 }
 
 void Fleet::Refresh(){
-
+	canReproduce = true;
+	dead = false;
 	for(Ship& ship : ships){
 		ship.Refresh();
 	}
@@ -160,6 +180,41 @@ void Fleet::SetFitness(float score){
 
 float Fleet::GetFitness() const{
 	return fitness;
+}
+
+bool Fleet::operator<(const Fleet & fleet) const{
+	return fitness < fleet.fitness;
+}
+
+bool Fleet::IsDead() const{
+	return dead;
+}
+
+bool Fleet::CanReproduce() const{
+	return canReproduce;
+}
+
+void Fleet::MarkDead(){
+	dead = true;
+	canReproduce = false;
+}
+
+void Fleet::Reproduce(const Fleet & fleet, float mutationChance, float mutationIntensity, int maxFleetSize, float maxRessources){
+
+	dead = false;
+	// mutation is missing
+
+	costLimit = fleet.costLimit;
+	combinedCost = fleet.combinedCost;
+	usedCapacity = fleet.usedCapacity;
+	combinedCapacity = fleet.combinedCapacity;
+	capitalShipLimit = fleet.capitalShipLimit;
+	capitalShipCount = fleet.capitalShipCount;
+	name.assign(fleet.name);
+	ships = fleet.ships;
+	buyableList = fleet.buyableList;
+	typeCount = fleet.typeCount;
+
 }
 
 int Fleet::UpdateBuyableList(){
