@@ -140,6 +140,7 @@ BattleReport Fleet::Fight(Fleet & opposingFleet, bool verbose){
 
 	// a battle only counts as victory if the attacking fleet is still able to press on
 	br.battleWon = CanFight();
+	br.ownCombinedCost = combinedCost;
 	br.enemyCombinedCost = opposingFleet.combinedCost;
 	br.ressourcesDetroyed = opposingFleet.combinedCost - opposingFleet.CountActiveRessource();
 	br.ressourcesLost = combinedCost - CountActiveRessource();

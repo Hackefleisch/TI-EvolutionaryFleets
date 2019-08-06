@@ -2,7 +2,9 @@
 
 std::string BattleReport::GetString() const{
 
-	std::string str = "Attacker";
+	std::stringstream oCC;
+	oCC << std::fixed << std::setprecision(1) << enemyCombinedCost;
+	std::string str = "Attacker of combined cost " + oCC.str();
 	if(battleWon){
 		str += " won ";
 	} else{

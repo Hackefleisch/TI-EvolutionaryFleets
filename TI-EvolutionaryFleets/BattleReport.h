@@ -14,5 +14,6 @@ public:
 	float ressourcesDetroyed = 0.0f;
 	float ressourcesLost = 0.0f;
 	float enemyCombinedCost = 0.0f;
+	float ownCombinedCost = 0.0f;
 };
 
