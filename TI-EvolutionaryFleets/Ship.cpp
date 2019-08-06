@@ -93,3 +93,7 @@ ShipTypes Ship::GetType() const{
 bool Ship::IsDestroyed() const{
 	return destroyed;
 }
+
+float Ship::GetCost() const{
+	return cost;
+}

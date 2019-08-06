@@ -16,6 +16,7 @@ public:
 	bool CanSustain() const;
 	ShipTypes GetType() const;
 	bool IsDestroyed() const;
+	float GetCost() const;
 private:
 	ShipTypes type;
 	float cost;

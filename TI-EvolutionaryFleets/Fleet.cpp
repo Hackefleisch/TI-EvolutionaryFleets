@@ -25,12 +25,7 @@ Fleet::Fleet(const Fleet& in_fleet){
 	ships = in_fleet.ships;
 	buyableList = in_fleet.buyableList;
 	typeCount = in_fleet.typeCount;
-	winScore = in_fleet.winScore;
-	dstTotalScore = in_fleet.dstTotalScore;
-	tknTotalScore = in_fleet.tknTotalScore;
-	dstRelScore = in_fleet.dstRelScore;
-	tknRelScore = in_fleet.tknRelScore;
-	frctScore = in_fleet.frctScore;
+	fitness = in_fleet.fitness;
 	rng = in_fleet.rng;
 	d10 = in_fleet.d10;
 	d1000 = in_fleet.d1000;
@@ -97,24 +92,21 @@ void Fleet::Reset(){
 	for(int t = (int)ShipTypes::Fighter; t <= (int)ShipTypes::WarSun; t++){
 		typeCount.at(t) = 0;
 	}
-	winScore = 0.0f;
-	dstTotalScore = 0.0f;
-	tknTotalScore = 0.0f;
-	dstRelScore = 0.0f;
-	tknRelScore = 0.0f;
-	frctScore = 0.0f;
+	fitness = 0.0f;
 
 }
 
 void Fleet::Refresh(){
 
-	for(Ship ship : ships){
+	for(Ship& ship : ships){
 		ship.Refresh();
 	}
 
 }
 
-void Fleet::Fight(Fleet & opposingFleet, bool verbose){
+BattleReport Fleet::Fight(Fleet & opposingFleet, bool verbose){
+
+	BattleReport br;
 
 	// Anti Fighter Barrage
 	if(verbose){
@@ -146,12 +138,17 @@ void Fleet::Fight(Fleet & opposingFleet, bool verbose){
 		opposingFleet.AssignHits(nOwnHits, verbose);
 	}
 
-	// Score?
-
+	// a battle only counts as victory if the attacking fleet is still able to press on
+	br.battleWon = CanFight();
+	br.enemyCombinedCost = opposingFleet.combinedCost;
+	br.ressourcesDetroyed = opposingFleet.combinedCost - opposingFleet.CountActiveRessource();
+	br.ressourcesLost = combinedCost - CountActiveRessource();
 
 	// Refresh all ships
 	Refresh();
 	opposingFleet.Refresh();
+
+	return br;
 }
 
 int Fleet::UpdateBuyableList(){
@@ -252,4 +249,16 @@ void Fleet::AssignHits(int nHits, bool verbose){
 	if(nHits > 0){
 		nHits = AssignHitsToType(nHits, ShipTypes::WarSun, verbose);
 	}
+}
+
+float Fleet::CountActiveRessource() const{
+	float activeRessources = 0.0f;
+
+	for(const Ship& ship : ships){
+		if(!ship.IsDestroyed()){
+			activeRessources += ship.GetCost();
+		}
+	}
+
+	return activeRessources;
 }

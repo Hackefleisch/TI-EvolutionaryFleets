@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 #include <iostream>
+#include "BattleReport.h"
 
 class Fleet{
 public:
@@ -17,7 +18,7 @@ public:
 	std::string GetName() const;
 	void Reset();
 	void Refresh();
-	void Fight(Fleet& opposingFleet, bool verbose);
+	BattleReport Fight(Fleet& opposingFleet, bool verbose);
 private:
 	int UpdateBuyableList();
 	int AssignHitsToType(int nHits, ShipTypes type, bool verbose);
@@ -26,6 +27,7 @@ private:
 	int ProduceHits(bool verbose) const;
 	bool CanFight() const;
 	void AssignHits(int nHits, bool verbose);
+	float CountActiveRessource() const;
 private:
 	float costLimit = 0.0f;
 	float combinedCost = 0.0f;
@@ -37,12 +39,7 @@ private:
 	std::vector<Ship> ships;
 	std::vector<ShipTypes> buyableList;
 	std::vector<int> typeCount;
-	float winScore = 0.0f;
-	float dstTotalScore = 0.0f;
-	float tknTotalScore = 0.0f;
-	float dstRelScore = 0.0f;
-	float tknRelScore = 0.0f;
-	float frctScore = 0.0f;
+	float fitness = 0.0f;
 	std::mt19937* rng;
 	std::uniform_int_distribution<int>* d10;
 	std::uniform_int_distribution<int>* d1000;
