@@ -9,9 +9,9 @@ public:
 	Ship() = default;
 	Ship(std::mt19937* in_rng, std::uniform_int_distribution<int>* in_d10);
 	void MakeOfType(ShipTypes in_type);
-	int ProduceHits() const;
-	int ProduceBarrageHits() const;
-	bool TakeHit();
+	int ProduceHits(bool verbose) const;
+	int ProduceBarrageHits(bool verbose) const;
+	bool TakeHit(bool verbose);
 	void Refresh();
 	bool CanSustain() const;
 	ShipTypes GetType() const;

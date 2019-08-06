@@ -17,15 +17,15 @@ public:
 	std::string GetName() const;
 	void Reset();
 	void Refresh();
-	void Fight(Fleet& opposingFleet);
+	void Fight(Fleet& opposingFleet, bool verbose);
 private:
 	int UpdateBuyableList();
-	int AssignHitsToType(int nHits, ShipTypes type);
-	int SustainDamage(int nHits);
-	int ProduceBarrageHits() const;
-	int ProduceHits() const;
+	int AssignHitsToType(int nHits, ShipTypes type, bool verbose);
+	int SustainDamage(int nHits, bool verbose);
+	int ProduceBarrageHits(bool verbose) const;
+	int ProduceHits(bool verbose) const;
 	bool CanFight() const;
-	void AssignHits(int nHits);
+	void AssignHits(int nHits, bool verbose);
 private:
 	float costLimit = 0.0f;
 	float combinedCost = 0.0f;

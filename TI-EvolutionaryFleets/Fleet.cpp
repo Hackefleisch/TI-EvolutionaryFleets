@@ -47,7 +47,7 @@ void Fleet::Initialize(float in_costLimit, int in_capitalShipLimit){
 	int nListItems = UpdateBuyableList();
 
 	while(nListItems > 0){
-		int d1000Result = (*d1000)(*rng);
+		int d1000Result = (*d1000)(*rng) - 1;
 		int index = d1000Result * nListItems / 1000;
 
 		ShipTypes type = buyableList.at(index);
@@ -114,34 +114,36 @@ void Fleet::Refresh(){
 
 }
 
-void Fleet::Fight(Fleet & opposingFleet){
+void Fleet::Fight(Fleet & opposingFleet, bool verbose){
 
 	// Anti Fighter Barrage
-	std::cout << "\n--------------------------------------" << std::endl;
-	std::cout << name + " attacks " + opposingFleet.name << std::endl;
-	std::cout << "--------------------------------------\n" << std::endl;
-	std::cout << "Anti-Fighter Barrage Attacker:" << std::endl;
-	int nOwnBarrageHits = ProduceBarrageHits();
-	std::cout << "Anti-Fighter Barrage Defender:" << std::endl;
-	int nEneBarrageHits = opposingFleet.ProduceBarrageHits();
-	std::cout << "Anti-Fighter Barrage Losses Attacker:" << std::endl;
-	AssignHitsToType(nEneBarrageHits, ShipTypes::Fighter);
-	std::cout << "Anti-Fighter Barrage Losses Defender:" << std::endl;
-	opposingFleet.AssignHitsToType(nOwnBarrageHits, ShipTypes::Fighter);
+	if(verbose){
+		std::cout << "\n--------------------------------------" << std::endl;
+		std::cout << name + " attacks " + opposingFleet.name << std::endl;
+		std::cout << "--------------------------------------\n" << std::endl;
+		std::cout << "Anti-Fighter Barrage Attacker:" << std::endl;
+	}
+	int nOwnBarrageHits = ProduceBarrageHits(verbose);
+	if(verbose)std::cout << "Anti-Fighter Barrage Defender:" << std::endl;
+	int nEneBarrageHits = opposingFleet.ProduceBarrageHits(verbose);
+	if(verbose)std::cout << "Anti-Fighter Barrage Losses Attacker:" << std::endl;
+	AssignHitsToType(nEneBarrageHits, ShipTypes::Fighter, verbose);
+	if(verbose)std::cout << "Anti-Fighter Barrage Losses Defender:" << std::endl;
+	opposingFleet.AssignHitsToType(nOwnBarrageHits, ShipTypes::Fighter, verbose);
 
 	// Repeat combat until one side is eliminated
 	while(CanFight() && opposingFleet.CanFight()){
 		// produce hits
-		std::cout << "\nHits Attacker:" << std::endl;
-		int nOwnHits = ProduceHits();
-		std::cout << "Hits Defender:" << std::endl;
-		int nEneHits = opposingFleet.ProduceHits();
+		if(verbose)std::cout << "\nHits Attacker:" << std::endl;
+		int nOwnHits = ProduceHits(verbose);
+		if(verbose)std::cout << "Hits Defender:" << std::endl;
+		int nEneHits = opposingFleet.ProduceHits(verbose);
 
 		// assign hits
-		std::cout << "Losses Attacker:" << std::endl;
-		AssignHits(nEneHits);
-		std::cout << "Losses Defender:" << std::endl;
-		opposingFleet.AssignHits(nOwnHits);
+		if(verbose)std::cout << "Losses Attacker:" << std::endl;
+		AssignHits(nEneHits, verbose);
+		if(verbose)std::cout << "Losses Defender:" << std::endl;
+		opposingFleet.AssignHits(nOwnHits, verbose);
 	}
 
 	// Score?
@@ -178,11 +180,11 @@ int Fleet::UpdateBuyableList(){
 	return nBuyableItems;
 }
 
-int Fleet::AssignHitsToType(int nHits, ShipTypes type){
+int Fleet::AssignHitsToType(int nHits, ShipTypes type, bool verbose){
 	// This function should assign as many hits as possible to ships of type and return the amount of hits left
 	for(Ship& ship : ships){
 		if(ship.GetType() == type && nHits > 0){
-			if(ship.TakeHit()){
+			if(ship.TakeHit(verbose)){
 				nHits--;
 			}
 		}
@@ -191,11 +193,11 @@ int Fleet::AssignHitsToType(int nHits, ShipTypes type){
 	return nHits;
 }
 
-int Fleet::SustainDamage(int nHits){
+int Fleet::SustainDamage(int nHits, bool verbose){
 	// This function tries to cancel as many hits as possible with sustain damage and returns the amount of hits left
 	for(Ship& ship : ships){
 		if(ship.CanSustain() && nHits > 0){
-			if(ship.TakeHit()){
+			if(ship.TakeHit(verbose)){
 				nHits--;
 			}
 		}
@@ -204,18 +206,18 @@ int Fleet::SustainDamage(int nHits){
 	return nHits;
 }
 
-int Fleet::ProduceBarrageHits() const{
+int Fleet::ProduceBarrageHits(bool verbose) const{
 	int nHits = 0;
 	for(const Ship& ship : ships){
-		nHits += ship.ProduceBarrageHits();
+		nHits += ship.ProduceBarrageHits(verbose);
 	}
 	return nHits;
 }
 
-int Fleet::ProduceHits() const{
+int Fleet::ProduceHits(bool verbose) const{
 	int nHits = 0;
 	for(const Ship& ship : ships){
-		nHits += ship.ProduceHits();
+		nHits += ship.ProduceHits(verbose);
 	}
 	return nHits;
 }
@@ -229,25 +231,25 @@ bool Fleet::CanFight() const{
 	return false;
 }
 
-void Fleet::AssignHits(int nHits){
+void Fleet::AssignHits(int nHits, bool verbose){
 
-	nHits = SustainDamage(nHits);
+	nHits = SustainDamage(nHits, verbose);
 	if(nHits > 0){
-		nHits = AssignHitsToType(nHits, ShipTypes::Fighter);
+		nHits = AssignHitsToType(nHits, ShipTypes::Fighter, verbose);
 	}
 	if(nHits > 0){
-		nHits = AssignHitsToType(nHits, ShipTypes::Destroyer);
+		nHits = AssignHitsToType(nHits, ShipTypes::Destroyer, verbose);
 	}
 	if(nHits > 0){
-		nHits = AssignHitsToType(nHits, ShipTypes::Carrier);
+		nHits = AssignHitsToType(nHits, ShipTypes::Carrier, verbose);
 	}
 	if(nHits > 0){
-		nHits = AssignHitsToType(nHits, ShipTypes::Cruiser);
+		nHits = AssignHitsToType(nHits, ShipTypes::Cruiser, verbose);
 	}
 	if(nHits > 0){
-		nHits = AssignHitsToType(nHits, ShipTypes::Dreadnought);
+		nHits = AssignHitsToType(nHits, ShipTypes::Dreadnought, verbose);
 	}
 	if(nHits > 0){
-		nHits = AssignHitsToType(nHits, ShipTypes::WarSun);
+		nHits = AssignHitsToType(nHits, ShipTypes::WarSun, verbose);
 	}
 }

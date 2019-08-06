@@ -22,24 +22,24 @@ void Ship::MakeOfType(ShipTypes in_type){
 
 }
 
-int Ship::ProduceHits() const{
+int Ship::ProduceHits(bool verbose) const{
 	if(destroyed){
 		return 0;
 	}
 	int hits = 0;
 	for(int i = 0; i < combatDice; i++){
 		int d10result = (*d10)(*rng);
-		std::cout << "\t" + ShipStats::Name(type) + " rolled " + std::to_string(d10result);
+		if(verbose)std::cout << "\t" + ShipStats::Name(type) + " rolled " + std::to_string(d10result);
 		if(d10result >= combatRoll){
-			std::cout << " HIT!";
+			if(verbose)std::cout << " HIT!";
 			hits++;
 		}
-		std::cout << std::endl;
+		if(verbose)std::cout << std::endl;
 	}
 	return hits;
 }
 
-int Ship::ProduceBarrageHits() const{
+int Ship::ProduceBarrageHits(bool verbose) const{
 	if(destroyed){
 		return 0;
 	}
@@ -47,28 +47,28 @@ int Ship::ProduceBarrageHits() const{
 
 	for(int i = 0; i < barrageDice; i++){
 		int d10result = (*d10)(*rng);
-		std::cout << "\t" + ShipStats::Name(type) + " rolled " + std::to_string(d10result);
+		if(verbose)std::cout << "\t" + ShipStats::Name(type) + " rolled " + std::to_string(d10result);
 		if(d10result >= barrageRoll){
-			std::cout << " HIT!";
+			if(verbose)std::cout << " HIT!";
 			barrageHits++;
 		}
-		std::cout << std::endl;
+		if(verbose)std::cout << std::endl;
 	}
 
 	return barrageHits;
 }
 
-bool Ship::TakeHit(){
+bool Ship::TakeHit(bool verbose){
 	// returns true if this ship took a hit and false if this ship wasn't able to take more
 	// if the ship takes a hit it is properly processed
 	if(destroyed){
 		return false;
 	} else{
 		if(CanSustain()){
-			std::cout << "\t" + ShipStats::Name(type) + " sustained damage." << std::endl;
+			if(verbose)std::cout << "\t" + ShipStats::Name(type) + " sustained damage." << std::endl;
 			sustainedDamage = true;
 		} else{
-			std::cout << "\t" + ShipStats::Name(type) + " got destroyed." << std::endl;
+			if(verbose)std::cout << "\t" + ShipStats::Name(type) + " got destroyed." << std::endl;
 			destroyed = true;
 		}
 		return true;
