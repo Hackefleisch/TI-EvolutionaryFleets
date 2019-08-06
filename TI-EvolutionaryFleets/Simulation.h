@@ -2,6 +2,8 @@
 
 #include "Fleet.h"
 #include <random>
+#include <vector>
+#include <iostream>
 
 class Simulation{
 public:
@@ -9,7 +11,7 @@ public:
 	Simulation();
 	~Simulation();
 private:
-	Fleet fleet;
+	std::vector<Fleet> fleets;
 	std::random_device rd;
 	std::mt19937 rng;
 	std::uniform_int_distribution<int> d10;

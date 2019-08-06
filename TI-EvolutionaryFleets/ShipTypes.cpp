@@ -132,3 +132,21 @@ bool ShipStats::SustainDamage(ShipTypes type){
 			return false;
 	}
 }
+
+std::string ShipStats::Name(ShipTypes type){
+	switch(type){
+		case ShipTypes::Fighter:
+			return "Fighter";
+		case ShipTypes::Destroyer:
+			return "Destroyer";
+		case ShipTypes::Cruiser:
+			return "Cruiser";
+		case ShipTypes::Carrier:
+			return "Carrier";
+		case ShipTypes::Dreadnought:
+			return "Dreadnought";
+		case ShipTypes::WarSun:
+			return "WarSun";
+	}
+	return "";
+}

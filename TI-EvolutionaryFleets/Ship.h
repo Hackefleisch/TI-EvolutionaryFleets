@@ -2,6 +2,7 @@
 
 #include <random>
 #include "ShipTypes.h"
+#include <iostream>
 
 class Ship{
 public:
@@ -13,6 +14,8 @@ public:
 	bool TakeHit();
 	void Refresh();
 	bool CanSustain() const;
+	ShipTypes GetType() const;
+	bool IsDestroyed() const;
 private:
 	ShipTypes type;
 	float cost;

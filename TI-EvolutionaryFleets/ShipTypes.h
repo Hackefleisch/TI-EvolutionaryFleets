@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 
 enum class ShipTypes{
 	Fighter,
@@ -19,4 +20,5 @@ public:
 	static int BarrageRoll(ShipTypes type);
 	static int BarrageDice(ShipTypes type);
 	static bool SustainDamage(ShipTypes type);
+	static std::string Name(ShipTypes type);
 };

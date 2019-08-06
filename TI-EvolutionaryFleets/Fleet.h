@@ -4,19 +4,28 @@
 #include <vector>
 #include <random>
 #include <string>
+#include <iostream>
 
 class Fleet{
 public:
 	Fleet() = default;
 	Fleet(std::mt19937* in_rng, std::uniform_int_distribution<int>* in_d1000, std::uniform_int_distribution<int>* in_d10);
-	Fleet(const Fleet&) = delete;
+	Fleet(const Fleet& in_fleet);
 	Fleet& operator=(const Fleet&);
 	~Fleet() = default;
 	void Initialize(float in_costLimit, int in_capitalShipLimit);
 	std::string GetName() const;
 	void Reset();
+	void Refresh();
+	void Fight(Fleet& opposingFleet);
 private:
 	int UpdateBuyableList();
+	int AssignHitsToType(int nHits, ShipTypes type);
+	int SustainDamage(int nHits);
+	int ProduceBarrageHits() const;
+	int ProduceHits() const;
+	bool CanFight() const;
+	void AssignHits(int nHits);
 private:
 	float costLimit = 0.0f;
 	float combinedCost = 0.0f;
