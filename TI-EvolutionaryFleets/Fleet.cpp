@@ -190,9 +190,15 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 		}
 		if(d10result > 5){
 			// mutate ship
-			int nListItems = UpdateBuyableList();
-			ShipTypes type = GetTypeToBuy(nListItems);
-			prebuyList.push_back(type);
+			std::random_shuffle(prebuyList.begin(), prebuyList.end());
+			d10result = (*d10)(*rng);
+			if(d10result > 5){
+				int nListItems = UpdateBuyableList();
+				ShipTypes type = GetTypeToBuy(nListItems);
+				prebuyList.push_back(type);
+			} else{
+				prebuyList.pop_back();
+			}
 		}
 		d10result = (*d10)(*rng);
 		if(d10result > 5){
@@ -460,6 +466,7 @@ void Fleet::PreBuyShips(std::vector<ShipTypes> preBuyList){
 			for(ShipTypes t : preBuyList){
 				if(CanBuyType(t)){
 					buyableLeft = true;
+					break;
 				}
 			}
 		}

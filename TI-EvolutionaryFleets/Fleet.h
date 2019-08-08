@@ -7,6 +7,7 @@
 #include <iostream>
 #include "BattleReport.h"
 #include <assert.h>
+#include <algorithm>
 
 class Fleet{
 public:
