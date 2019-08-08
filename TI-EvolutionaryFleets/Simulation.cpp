@@ -75,9 +75,9 @@ float Simulation::ScoreFleets(bool verbose){
 
 void Simulation::Start(bool verbose){
 
-	float oldMeanFitness = 0.0f;
 	float newMeanFitness = 0.0f;
 	float meanFitnessDiff = 0.0f;
+	float bestMeanFitness = 0.0f;
 	int iteration = 0;
 	int counterFailedImprovements = 0;
 
@@ -86,8 +86,10 @@ void Simulation::Start(bool verbose){
 
 		// Score fleets
 		newMeanFitness = ScoreFleets(verbose);
-		meanFitnessDiff = newMeanFitness - oldMeanFitness;
-		oldMeanFitness = newMeanFitness;
+		meanFitnessDiff = newMeanFitness - bestMeanFitness;
+		if(newMeanFitness > bestMeanFitness){
+			bestMeanFitness = newMeanFitness;
+		}
 
 		if(meanFitnessDiff < minFitnessImprovement){
 			counterFailedImprovements++;
@@ -95,14 +97,17 @@ void Simulation::Start(bool verbose){
 			counterFailedImprovements = 0;
 		}
 
+		// lowest fitness is first, highest last
+		std::sort(fleets.begin(), fleets.end());
+
 		// collect data of current population
-		Fleet bestFleet = FindBestFleet();
+		Fleet& bestFleet = fleets.back();
 
 		// renew population
 		EvolvePopulation();
 
 		// compose report
-		std::cout << iteration << ". generation mean fitness " << newMeanFitness << ", improved by " << meanFitnessDiff << std::endl;
+		std::cout << iteration << ". generation mean fitness " << newMeanFitness << ", improved by " << meanFitnessDiff << " from best " << bestMeanFitness << std::endl;
 		std::cout << "\tBest fleet is " + bestFleet.GetName() + " with fitness " << bestFleet.GetFitness() << std::endl;
 
 	} while(iteration < maxIterations && counterFailedImprovements <= nGenerationsToFailMinImprovement);
@@ -116,8 +121,6 @@ void Simulation::PrintScores() const{
 }
 
 void Simulation::EvolvePopulation(){
-	// lowest fitness is first, highest last
-	std::sort(fleets.begin(), fleets.end());
 
 	int nDyingFleets = (int)(populationSize * deathRate);
 	int deadCounter = 0;
