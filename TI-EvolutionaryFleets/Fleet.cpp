@@ -183,14 +183,16 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 	int maxMutationRoll = (int)(1000 * mutationChance);
 	int d1000result = (*d1000)(*rng);
 	if(d1000result <= maxMutationRoll){
-		int d10result = (*d10)(*rng);
+
 		std::vector<ShipTypes> prebuyList;
 		for(const Ship& ship : fleet.ships){
 			prebuyList.push_back(ship.GetType());
 		}
+		std::random_shuffle(prebuyList.begin(), prebuyList.end());
+
+		int d10result = (*d10)(*rng);
 		if(d10result > 5){
 			// mutate ship
-			std::random_shuffle(prebuyList.begin(), prebuyList.end());
 			d10result = (*d10)(*rng);
 			if(d10result > 5){
 				int nListItems = UpdateBuyableList();
@@ -200,6 +202,7 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 				prebuyList.pop_back();
 			}
 		}
+
 		d10result = (*d10)(*rng);
 		if(d10result > 5){
 			// mutate cost
@@ -235,6 +238,7 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 				costLimit = 1.0f;
 			}
 		}
+		
 		d10result = (*d10)(*rng);
 		if(d10result > 5){
 			// mutate size
@@ -265,6 +269,7 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 				capitalShipLimit = 1;
 			}
 		}
+		
 		PreBuyShips(prebuyList);
 		BuyShips();
 		UpdateName();

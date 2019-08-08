@@ -27,7 +27,7 @@ private:
 	// parameters
 	float startingRessources = 9.0f;
 	int startingFleetSize = 3;
-	float maxRessources = 40.0f;
+	float maxRessources = 35.0f;
 	int maxFleetSize = 10;
 	int populationSize = 200;
 	int maxIterations = 500;
@@ -40,8 +40,8 @@ private:
 	float tknRelScoreFactor = 1.0f;
 	float frctScoreFactor = 0.0f;
 	float mutationRate = 0.1f;
-	int mutationIntensity = 1;
-	int nScoringEncounters = 5;
+	int mutationIntensity = 3;
+	int nScoringEncounters = 15;
 	int nEncounterRepitions = 5;
 	bool randomizedDeath = true;
 	float deathRate = 0.5f;
