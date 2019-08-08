@@ -46,7 +46,7 @@ float Simulation::ScoreFleets(bool verbose){
 				dstRelScore += br.ressourcesDetroyed / br.enemyCombinedCost;
 				tknRelScore += br.ressourcesLost / br.ownCombinedCost;
 				frctScore += br.ressourcesDetroyed / (br.ownCombinedCost * maxRessources);
-				absFrctScore += br.ressourcesDetroyed / (br.ownCombinedCost);
+				absFrctScore += br.ressourcesDetroyed / br.ownCombinedCost;
 			}
 		}
 
@@ -170,7 +170,7 @@ void Simulation::EvolvePopulation(){
 		}
 		Fleet& deadFleet = fleets.at(deadIndex);
 		Fleet& reproduceFleet = fleets.at(reproduceIndex);
-		deadFleet.Reproduce(reproduceFleet, mutationRate, mutationIntensity, maxFleetSize, maxRessources);
+		deadFleet.Reproduce(reproduceFleet, mutationRate, mutationIntensity, shipMutationLikelihood, costMutationLikelihood, sizeMutationLikelihood, maxFleetSize, maxRessources);
 		deadCounter--;
 		reproduceIndex++;
 		if(reproduceIndex >= populationSize){

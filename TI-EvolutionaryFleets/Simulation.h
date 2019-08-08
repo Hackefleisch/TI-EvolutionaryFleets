@@ -48,5 +48,8 @@ private:
 	float deathRate = 0.5f;
 	float minSurvivalChance = 0.01f;
 	float maxSurvivalChance = 0.99f;
+	int shipMutationLikelihood = 1;
+	int costMutationLikelihood = 4;
+	int sizeMutationLikelihood = 4;
 };
 

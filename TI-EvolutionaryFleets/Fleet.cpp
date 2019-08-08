@@ -173,7 +173,8 @@ void Fleet::MarkDead(){
 	canReproduce = false;
 }
 
-void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationIntensity, int maxFleetSize, float maxRessources){
+void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationIntensity, int shipMutationLikelihood, int costMutationLikelihood, 
+					  int sizeMutationLikelihood, int maxFleetSize, float maxRessources){
 
 	Reset();
 	canReproduce = false;
@@ -190,9 +191,69 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 		}
 		std::random_shuffle(prebuyList.begin(), prebuyList.end());
 
-		int d10result = (*d10)(*rng);
-		if(d10result > 5){
-			// mutate ship
+		d1000result = (*d1000)(*rng);
+
+		bool mutateShip = false;
+		bool mutateCost = false;
+		bool mutateSize = false;
+		float totalLikelihood = (float)(shipMutationLikelihood + costMutationLikelihood + sizeMutationLikelihood);
+		float shipMutationFactor = shipMutationLikelihood / totalLikelihood;
+		float costMutationFactor = costMutationLikelihood / totalLikelihood;
+		float sizeMutationFactor = sizeMutationLikelihood / totalLikelihood;
+		float shipAndCostMutationFactor = shipMutationFactor * costMutationFactor;
+		float costAndSizeMutationFactor = costMutationFactor * sizeMutationFactor;
+		float sizeAndShipMutationFactor = sizeMutationFactor * shipMutationFactor;
+		float allMutationsFactor = shipMutationFactor * costMutationFactor * sizeMutationFactor;
+		float totalFactors = shipMutationFactor + costMutationFactor + sizeMutationFactor + shipAndCostMutationFactor + costAndSizeMutationFactor + sizeAndShipMutationFactor + allMutationsFactor;
+
+		shipMutationFactor = (shipMutationFactor / totalFactors) * 1000;
+		costMutationFactor = shipMutationFactor + (costMutationFactor / totalFactors) * 1000;
+		sizeMutationFactor = costMutationFactor + (sizeMutationFactor / totalFactors) * 1000;
+		shipAndCostMutationFactor = sizeMutationFactor + (shipAndCostMutationFactor / totalFactors) * 1000;
+		costAndSizeMutationFactor = shipAndCostMutationFactor + (costAndSizeMutationFactor / totalFactors) * 1000;
+		sizeAndShipMutationFactor = costAndSizeMutationFactor + (sizeAndShipMutationFactor / totalFactors) * 1000;
+		allMutationsFactor = sizeAndShipMutationFactor + (allMutationsFactor / totalFactors) * 1000;
+
+		if(d1000result < shipMutationFactor){
+			mutateShip = true;
+		} else if(d1000result < costMutationFactor){
+			mutateCost = true;
+		} else if(d1000result < sizeMutationFactor){
+			mutateSize = true;
+		} else if(d1000result < shipAndCostMutationFactor){
+			mutateShip = true;
+			mutateCost = true;
+		} else if(d1000result < costAndSizeMutationFactor){
+			mutateCost = true;
+			mutateSize = true;
+		} else if(d1000result < sizeAndShipMutationFactor){
+			mutateSize = true;
+			mutateShip = true;
+		} else{
+			mutateShip = true;
+			mutateCost = true;
+			mutateSize = true;
+		}
+
+		int d10result = 0;
+		// mutate ship
+		if(mutateShip){
+			d1000result = 0;
+			// reroll die for strongest result
+			for(int i = 0; i < mutationIntensity; i++){
+				int tmp = (*d1000)(*rng);
+				if(tmp > d1000result){
+					d1000result = tmp;
+				}
+			}
+			// calculate intensity
+			int change = 0;
+			if(d1000result < 900){
+				change = 1;
+			} else{
+				change = 2;
+			}
+
 			d10result = (*d10)(*rng);
 			if(d10result > 5){
 				int nListItems = UpdateBuyableList();
@@ -203,9 +264,8 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 			}
 		}
 
-		d10result = (*d10)(*rng);
-		if(d10result > 5){
-			// mutate cost
+		// mutate cost
+		if(mutateCost){
 			d1000result = 0;
 			// reroll die for strongest result
 			for(int i = 0; i < mutationIntensity; i++){
@@ -238,10 +298,9 @@ void Fleet::Reproduce(const Fleet & fleet, float mutationChance, int mutationInt
 				costLimit = 1.0f;
 			}
 		}
-		
-		d10result = (*d10)(*rng);
-		if(d10result > 5){
-			// mutate size
+
+		// mutate size
+		if(mutateSize){
 			d1000result = 0;
 			// reroll die for strongest result
 			for(int i = 0; i < mutationIntensity; i++){

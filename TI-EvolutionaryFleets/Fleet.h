@@ -27,7 +27,8 @@ public:
 	bool IsDead() const;
 	bool CanReproduce() const;
 	void MarkDead();
-	void Reproduce(const Fleet& fleet, float mutationChance, int mutationIntensity, int maxFleetSize, float maxRessources);
+	void Reproduce(const Fleet & fleet, float mutationChance, int mutationIntensity, int shipMutationLikelihood, int costMutationLikelihood,
+				   int sizeMutationLikelihood, int maxFleetSize, float maxRessources);
 private:
 	int UpdateBuyableList();
 	int AssignHitsToType(int nHits, ShipTypes type, bool verbose);
