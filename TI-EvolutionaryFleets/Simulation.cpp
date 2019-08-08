@@ -25,6 +25,7 @@ float Simulation::ScoreFleets(bool verbose){
 		float dstRelScore = 0.0f;
 		float tknRelScore = 0.0f;
 		float frctScore = 0.0f;
+		float absFrctScore = 0.0f;
 		float fitness = 0.0f;
 
 		for(int j = 0; j < nScoringEncounters; j++){
@@ -45,6 +46,7 @@ float Simulation::ScoreFleets(bool verbose){
 				dstRelScore += br.ressourcesDetroyed / br.enemyCombinedCost;
 				tknRelScore += br.ressourcesLost / br.ownCombinedCost;
 				frctScore += br.ressourcesDetroyed / (br.ownCombinedCost * maxRessources);
+				absFrctScore += br.ressourcesDetroyed / (br.ownCombinedCost);
 			}
 		}
 
@@ -56,15 +58,16 @@ float Simulation::ScoreFleets(bool verbose){
 		dstRelScore /= nBattles;
 		tknRelScore /= nBattles;
 		frctScore /= nBattles;
+		absFrctScore /= nBattles;
 
 		//invert negative scores
 		tknTotalScore = 1 - tknTotalScore;
 		tknRelScore = 1 - tknRelScore;
 
 		// combine
-		fitness = winScore * winScoreFactor + dstTotalScore * dstTotalScoreFactor + tknTotalScore * tknTotalScoreFactor + dstRelScore * dstRelScoreFactor + tknRelScore * tknRelScoreFactor + frctScore * frctScoreFactor;
+		fitness = winScore * winScoreFactor + dstTotalScore * dstTotalScoreFactor + tknTotalScore * tknTotalScoreFactor + dstRelScore * dstRelScoreFactor + tknRelScore * tknRelScoreFactor + frctScore * frctScoreFactor + absFrctScore * absFrctScoreFactor;
 		// normalize
-		fitness /= winScoreFactor + dstTotalScoreFactor + tknTotalScoreFactor + dstRelScoreFactor + tknRelScoreFactor + frctScoreFactor;
+		fitness /= winScoreFactor + dstTotalScoreFactor + tknTotalScoreFactor + dstRelScoreFactor + tknRelScoreFactor + frctScoreFactor + absFrctScoreFactor;
 
 		scoringFleet.SetFitness(fitness);
 		meanFitness += fitness / populationSize;

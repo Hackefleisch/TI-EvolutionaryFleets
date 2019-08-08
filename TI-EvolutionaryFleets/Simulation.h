@@ -27,7 +27,7 @@ private:
 	// parameters
 	float startingRessources = 9.0f;
 	int startingFleetSize = 3;
-	float maxRessources = 35.0f;
+	float maxRessources = 40.0f;
 	int maxFleetSize = 10;
 	int populationSize = 200;
 	int maxIterations = 500;
@@ -37,8 +37,9 @@ private:
 	float dstTotalScoreFactor = 0.0f;
 	float tknTotalScoreFactor = 0.0f;
 	float dstRelScoreFactor = 1.0f;
-	float tknRelScoreFactor = 1.0f;
+	float tknRelScoreFactor = 0.0f;
 	float frctScoreFactor = 0.0f;
+	float absFrctScoreFactor = 0.0f;
 	float mutationRate = 0.1f;
 	int mutationIntensity = 3;
 	int nScoringEncounters = 15;
