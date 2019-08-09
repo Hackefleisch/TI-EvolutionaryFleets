@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Ship.h"
 #include <vector>
 #include <random>
 #include <string>
 #include <iostream>
-#include "BattleReport.h"
 #include <assert.h>
 #include <algorithm>
+
+#include "BattleReport.h"
+#include "Ship.h"
 
 class Fleet{
 public:
@@ -23,6 +24,9 @@ public:
 	BattleReport Fight(Fleet& opposingFleet, bool verbose);
 	void SetFitness(float score);
 	float GetFitness() const;
+	float GetCost() const;
+	int GetSize() const;
+	std::vector<int> GetTypeCount() const;
 	bool operator<(const Fleet& fleet) const;
 	bool IsDead() const;
 	bool CanReproduce() const;

@@ -155,6 +155,18 @@ float Fleet::GetFitness() const{
 	return fitness;
 }
 
+float Fleet::GetCost() const{
+	return combinedCost;
+}
+
+int Fleet::GetSize() const{
+	return capitalShipCount;
+}
+
+std::vector<int> Fleet::GetTypeCount() const{
+	return typeCount;
+}
+
 bool Fleet::operator<(const Fleet & fleet) const{
 	return fitness < fleet.fitness;
 }
