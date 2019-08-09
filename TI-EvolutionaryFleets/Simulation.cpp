@@ -84,12 +84,25 @@ void Simulation::Start(bool verbose){
 	int iteration = 0;
 	int counterFailedImprovements = 0;
 
+	GenerationStats oldStats;
+	GenerationStats newStats;
+
 	do{
 		iteration++;
 
 		// Score fleets
-		newMeanFitness = ScoreFleets(verbose);
-		meanFitnessDiff = newMeanFitness - bestMeanFitness;
+		ScoreFleets(verbose);
+
+		// lowest fitness is first, highest last
+		std::sort(fleets.begin(), fleets.end());
+
+		int deadCounter = KillPopulation();
+
+		// collect data of current alive population
+		newStats.UpdateStats(fleets, onlyAliveStats);
+
+		newMeanFitness = newStats.GetMeanFitness();
+			meanFitnessDiff = newMeanFitness - bestMeanFitness;
 		if(newMeanFitness > bestMeanFitness){
 			bestMeanFitness = newMeanFitness;
 		}
@@ -100,20 +113,22 @@ void Simulation::Start(bool verbose){
 			counterFailedImprovements = 0;
 		}
 
-		// lowest fitness is first, highest last
-		std::sort(fleets.begin(), fleets.end());
-
-		// collect data of current population
-		Fleet& bestFleet = fleets.back();
-
 		// renew population
-		EvolvePopulation();
+		ReproducePopulation(deadCounter);
 
 		// compose report
-		std::cout << iteration << ". generation mean fitness " << newMeanFitness << ", improved by " << meanFitnessDiff << " from best " << bestMeanFitness << std::endl;
-		std::cout << "\tBest fleet is " + bestFleet.GetName() + " with fitness " << bestFleet.GetFitness() << std::endl;
+		std::cout << iteration << ". generation" << std::endl;
+		std::cout << newStats.ComposeReport(oldStats);
+
+		oldStats = newStats;
 
 	} while(iteration < maxIterations && counterFailedImprovements <= nGenerationsToFailMinImprovement);
+
+	if(counterFailedImprovements >= nGenerationsToFailMinImprovement){
+		std::cout << "Exited because of " << nGenerationsToFailMinImprovement << " failed improvements in a row." << std::endl;
+	} else{
+		std::cout << "Maximum iterations reached." << std::endl;
+	}
 
 }
 
@@ -123,7 +138,37 @@ void Simulation::PrintScores() const{
 	}
 }
 
-void Simulation::EvolvePopulation(){
+void Simulation::ReproducePopulation(int deadCounter){
+
+	int deadIndex = 0;
+	std::uniform_int_distribution<int> reproStartPicker(0, populationSize - 1);
+	int reproduceIndex = reproStartPicker(rng);
+	while(deadCounter > 0){
+		while(!fleets.at(deadIndex).IsDead()){
+			deadIndex++;
+			if(deadIndex >= populationSize){
+				deadIndex = 0;
+			}
+		}
+		while(!fleets.at(reproduceIndex).CanReproduce()){
+			reproduceIndex++;
+			if(reproduceIndex >= populationSize){
+				reproduceIndex = 0;
+			}
+		}
+		Fleet& deadFleet = fleets.at(deadIndex);
+		Fleet& reproduceFleet = fleets.at(reproduceIndex);
+		deadFleet.Reproduce(reproduceFleet, mutationRate, mutationIntensity, shipMutationLikelihood, costMutationLikelihood, sizeMutationLikelihood, maxFleetSize, maxRessources);
+		deadCounter--;
+		reproduceIndex++;
+		if(reproduceIndex >= populationSize){
+			reproduceIndex = 0;
+		}
+	}
+	
+}
+
+int Simulation::KillPopulation(){
 
 	int nDyingFleets = (int)(populationSize * deathRate);
 	int deadCounter = 0;
@@ -152,32 +197,7 @@ void Simulation::EvolvePopulation(){
 		}
 	}
 
-	int deadIndex = 0;
-	std::uniform_int_distribution<int> reproStartPicker(0, populationSize - 1);
-	int reproduceIndex = reproStartPicker(rng);
-	while(deadCounter > 0){
-		while(!fleets.at(deadIndex).IsDead()){
-			deadIndex++;
-			if(deadIndex >= populationSize){
-				deadIndex = 0;
-			}
-		}
-		while(!fleets.at(reproduceIndex).CanReproduce()){
-			reproduceIndex++;
-			if(reproduceIndex >= populationSize){
-				reproduceIndex = 0;
-			}
-		}
-		Fleet& deadFleet = fleets.at(deadIndex);
-		Fleet& reproduceFleet = fleets.at(reproduceIndex);
-		deadFleet.Reproduce(reproduceFleet, mutationRate, mutationIntensity, shipMutationLikelihood, costMutationLikelihood, sizeMutationLikelihood, maxFleetSize, maxRessources);
-		deadCounter--;
-		reproduceIndex++;
-		if(reproduceIndex >= populationSize){
-			reproduceIndex = 0;
-		}
-	}
-	
+	return deadCounter;
 }
 
 Simulation::Simulation()
